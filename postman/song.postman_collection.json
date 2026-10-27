@@ -1,0 +1,773 @@
+{
+  "info": {
+    "name": "Song API — CRUD",
+    "description": "Запустіть сервер і виконайте всю колекцію зверху вниз через Collection Runner. ID зберігаються автоматично. Колекція створює власні дані й видаляє їх наприкінці. Приклад 409 виконується до видалення пісні. Для повторного запуску використовується унікальне ім’я. Для демонстрації фронтенду можна зупинитися після створення пісні.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://127.0.0.1:8000",
+      "type": "string"
+    },
+    {
+      "key": "artist_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "song_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "existing_artist_name",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "01. Створити виконавця",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/api/artists/",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Postman {{$guid}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 201\", function () { pm.response.to.have.status(201); });",
+              "if (pm.response.code === 201) pm.collectionVariables.set(\"artist_id\", pm.response.json().id);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "02. Список виконавців",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{base_url}}/api/artists/"
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "03. Окремий виконавець",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{base_url}}/api/artists/{{artist_id}}/"
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "04. Змінити виконавця",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/api/artists/{{artist_id}}/",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Оновлений виконавець {{$guid}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+              "if (pm.response.code === 200) pm.collectionVariables.set(\"existing_artist_name\", pm.response.json().name);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "05. Створити пісню",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/api/songs/",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"Обійми\",\n  \"artist\": \"{{artist_id}}\",\n  \"genre\": \"Рок\",\n  \"listen_url\": \"https://example.com/song\",\n  \"featured_date\": \"2026-10-27\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 201\", function () { pm.response.to.have.status(201); });",
+              "if (pm.response.code === 201) pm.collectionVariables.set(\"song_id\", pm.response.json().id);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "06. Список пісень",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{base_url}}/api/songs/"
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "07. Окрема пісня",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{base_url}}/api/songs/{{song_id}}/"
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "08. Змінити пісню",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/api/songs/{{song_id}}/",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"Нова назва\",\n  \"featured_date\": null\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "09. Виконавець має пісні — 409",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": "{{base_url}}/api/artists/{{artist_id}}/"
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 409\", function () { pm.response.to.have.status(409); });",
+              "pm.test(\"Єдиний формат помилки\", function () { const e = pm.response.json().error; pm.expect(e).to.have.all.keys(\"message\", \"details\"); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "10. Порожнє ім’я — 400",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/api/artists/",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 400\", function () { pm.response.to.have.status(400); });",
+              "pm.test(\"Єдиний формат помилки\", function () { const e = pm.response.json().error; pm.expect(e).to.have.all.keys(\"message\", \"details\"); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "11. Дублікат імені — 400",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/api/artists/",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"{{existing_artist_name}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 400\", function () { pm.response.to.have.status(400); });",
+              "pm.test(\"Єдиний формат помилки\", function () { const e = pm.response.json().error; pm.expect(e).to.have.all.keys(\"message\", \"details\"); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "12. Невалідна пісня — 400",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/api/songs/",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"\",\n  \"artist\": \"{{artist_id}}\",\n  \"genre\": \"Рок\",\n  \"listen_url\": \"not-a-url\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 400\", function () { pm.response.to.have.status(400); });",
+              "pm.test(\"Єдиний формат помилки\", function () { const e = pm.response.json().error; pm.expect(e).to.have.all.keys(\"message\", \"details\"); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "13. Невідомий виконавець — 400",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/api/songs/",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"Пісня\",\n  \"artist\": 2147483647,\n  \"genre\": \"Рок\",\n  \"listen_url\": \"https://example.com/song\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 400\", function () { pm.response.to.have.status(400); });",
+              "pm.test(\"Єдиний формат помилки\", function () { const e = pm.response.json().error; pm.expect(e).to.have.all.keys(\"message\", \"details\"); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "14. Невалідна дата при редагуванні — 400",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/api/songs/{{song_id}}/",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"featured_date\": \"2026-99-99\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 400\", function () { pm.response.to.have.status(400); });",
+              "pm.test(\"Єдиний формат помилки\", function () { const e = pm.response.json().error; pm.expect(e).to.have.all.keys(\"message\", \"details\"); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "15. Порожнє ім’я при редагуванні — 400",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/api/artists/{{artist_id}}/",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 400\", function () { pm.response.to.have.status(400); });",
+              "pm.test(\"Єдиний формат помилки\", function () { const e = pm.response.json().error; pm.expect(e).to.have.all.keys(\"message\", \"details\"); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Об’єкт відсутній: GET artists — 404",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{base_url}}/api/artists/2147483647/"
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 404\", function () { pm.response.to.have.status(404); });",
+              "pm.test(\"Єдиний формат помилки\", function () { const e = pm.response.json().error; pm.expect(e).to.have.all.keys(\"message\", \"details\"); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Об’єкт відсутній: PATCH artists — 404",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/api/artists/2147483647/",
+        "body": {
+          "mode": "raw",
+          "raw": "{}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 404\", function () { pm.response.to.have.status(404); });",
+              "pm.test(\"Єдиний формат помилки\", function () { const e = pm.response.json().error; pm.expect(e).to.have.all.keys(\"message\", \"details\"); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Об’єкт відсутній: DELETE artists — 404",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": "{{base_url}}/api/artists/2147483647/"
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 404\", function () { pm.response.to.have.status(404); });",
+              "pm.test(\"Єдиний формат помилки\", function () { const e = pm.response.json().error; pm.expect(e).to.have.all.keys(\"message\", \"details\"); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Об’єкт відсутній: GET songs — 404",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{base_url}}/api/songs/2147483647/"
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 404\", function () { pm.response.to.have.status(404); });",
+              "pm.test(\"Єдиний формат помилки\", function () { const e = pm.response.json().error; pm.expect(e).to.have.all.keys(\"message\", \"details\"); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Об’єкт відсутній: PATCH songs — 404",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/api/songs/2147483647/",
+        "body": {
+          "mode": "raw",
+          "raw": "{}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 404\", function () { pm.response.to.have.status(404); });",
+              "pm.test(\"Єдиний формат помилки\", function () { const e = pm.response.json().error; pm.expect(e).to.have.all.keys(\"message\", \"details\"); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Об’єкт відсутній: DELETE songs — 404",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": "{{base_url}}/api/songs/2147483647/"
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 404\", function () { pm.response.to.have.status(404); });",
+              "pm.test(\"Єдиний формат помилки\", function () { const e = pm.response.json().error; pm.expect(e).to.have.all.keys(\"message\", \"details\"); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Невідомий маршрут — 404",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{base_url}}/api/unknown/"
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 404\", function () { pm.response.to.have.status(404); });",
+              "pm.test(\"Єдиний формат помилки\", function () { const e = pm.response.json().error; pm.expect(e).to.have.all.keys(\"message\", \"details\"); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "PUT не підтримується — 405",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/api/songs/{{song_id}}/",
+        "body": {
+          "mode": "raw",
+          "raw": "{}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 405\", function () { pm.response.to.have.status(405); });",
+              "pm.test(\"Єдиний формат помилки\", function () { const e = pm.response.json().error; pm.expect(e).to.have.all.keys(\"message\", \"details\"); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Видалити пісню",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": "{{base_url}}/api/songs/{{song_id}}/"
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 204\", function () { pm.response.to.have.status(204); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Пісня вже видалена — 404",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{base_url}}/api/songs/{{song_id}}/"
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 404\", function () { pm.response.to.have.status(404); });",
+              "pm.test(\"Єдиний формат помилки\", function () { const e = pm.response.json().error; pm.expect(e).to.have.all.keys(\"message\", \"details\"); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Видалити виконавця без пісень",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": "{{base_url}}/api/artists/{{artist_id}}/"
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 204\", function () { pm.response.to.have.status(204); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Виконавець вже видалений — 404",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{base_url}}/api/artists/{{artist_id}}/"
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 404\", function () { pm.response.to.have.status(404); });",
+              "pm.test(\"Єдиний формат помилки\", function () { const e = pm.response.json().error; pm.expect(e).to.have.all.keys(\"message\", \"details\"); });"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
