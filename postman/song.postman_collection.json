@@ -1,7 +1,7 @@
 {
   "info": {
-    "name": "Song API — CRUD",
-    "description": "Запустіть сервер і виконайте всю колекцію зверху вниз через Collection Runner. ID зберігаються автоматично. Колекція створює власні дані й видаляє їх наприкінці. Приклад 409 виконується до видалення пісні. Для повторного запуску використовується унікальне ім’я. Для демонстрації фронтенду можна зупинитися після створення пісні.",
+    "name": "Song API — JWT та CRUD",
+    "description": "Запустіть сервер і всю колекцію зверху вниз через Collection Runner. Токени та ID зберігаються автоматично. Наприкінці пісня й виконавець видаляються, токени очищуються. Тестовий акаунт залишається, кожен запуск створює унікальний username.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -24,9 +24,295 @@
       "key": "existing_artist_name",
       "value": "",
       "type": "string"
+    },
+    {
+      "key": "username",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "password",
+      "value": "study-password-2026",
+      "type": "string"
+    },
+    {
+      "key": "access",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "refresh",
+      "value": "",
+      "type": "string"
     }
   ],
   "item": [
+    {
+      "name": "Авторизація",
+      "item": [
+        {
+          "name": "Реєстрація: помилки полів — 400",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/register/",
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"\",\n  \"email\": \"invalid\",\n  \"password\": \"short\",\n  \"password_confirmation\": \"short\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 400\", function () { pm.response.to.have.status(400); });",
+                  "pm.test(\"Зрозуміла помилка\", function () { const e = pm.response.json().error; pm.expect(e.message).to.be.a(\"string\").and.not.empty; pm.expect(e).to.have.property(\"details\"); });",
+                  "pm.test(\"Помилки полів\", function () { const d = pm.response.json().error.details; pm.expect(d).to.have.property(\"username\"); pm.expect(d).to.have.property(\"email\"); pm.expect(d).to.have.property(\"password\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Реєстрація — 201",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/register/",
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{username}}\",\n  \"first_name\": \"\",\n  \"last_name\": \"\",\n  \"email\": \"{{username}}@example.com\",\n  \"password\": \"{{password}}\",\n  \"password_confirmation\": \"{{password}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set(\"username\", pm.variables.replaceIn(\"postman_{{$guid}}\"));",
+                  "pm.collectionVariables.unset(\"access\");",
+                  "pm.collectionVariables.unset(\"refresh\");"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", function () { pm.response.to.have.status(201); });",
+                  "pm.test(\"Паролі не повертаються\", function () { const u = pm.response.json(); pm.expect(u).not.to.have.property(\"password\"); pm.expect(u).not.to.have.property(\"password_confirmation\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Неправильний пароль — 401",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/token/",
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{username}}\",\n  \"password\": \"wrong-password\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 401\", function () { pm.response.to.have.status(401); });",
+                  "pm.test(\"Зрозуміла помилка\", function () { const e = pm.response.json().error; pm.expect(e.message).to.be.a(\"string\").and.not.empty; pm.expect(e).to.have.property(\"details\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Логін — 200",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/token/",
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{username}}\",\n  \"password\": \"{{password}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "if (pm.response.code === 200) { const t = pm.response.json(); pm.collectionVariables.set(\"access\", t.access); pm.collectionVariables.set(\"refresh\", t.refresh); }",
+                  "pm.test(\"Access і refresh\", function () { const t = pm.response.json(); pm.expect(t.access).to.be.a(\"string\").and.not.empty; pm.expect(t.refresh).to.be.a(\"string\").and.not.empty; });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Створення без токена — 401",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/artists/",
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Недозволено\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 401\", function () { pm.response.to.have.status(401); });",
+                  "pm.test(\"Зрозуміла помилка\", function () { const e = pm.response.json().error; pm.expect(e.message).to.be.a(\"string\").and.not.empty; pm.expect(e).to.have.property(\"details\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Оновити access — 200",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/token/refresh/",
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refresh\": \"{{refresh}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "if (pm.response.code === 200) pm.collectionVariables.set(\"access\", pm.response.json().access);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Профіль з оновленим access — 200",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_url}}/api/me/"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
     {
       "name": "01. Створити виконавця",
       "request": {
@@ -67,7 +353,10 @@
       "request": {
         "method": "GET",
         "header": [],
-        "url": "{{base_url}}/api/artists/"
+        "url": "{{base_url}}/api/artists/",
+        "auth": {
+          "type": "noauth"
+        }
       },
       "response": [],
       "event": [
@@ -87,7 +376,10 @@
       "request": {
         "method": "GET",
         "header": [],
-        "url": "{{base_url}}/api/artists/{{artist_id}}/"
+        "url": "{{base_url}}/api/artists/{{artist_id}}/",
+        "auth": {
+          "type": "noauth"
+        }
       },
       "response": [],
       "event": [
@@ -177,7 +469,10 @@
       "request": {
         "method": "GET",
         "header": [],
-        "url": "{{base_url}}/api/songs/"
+        "url": "{{base_url}}/api/songs/",
+        "auth": {
+          "type": "noauth"
+        }
       },
       "response": [],
       "event": [
@@ -197,7 +492,10 @@
       "request": {
         "method": "GET",
         "header": [],
-        "url": "{{base_url}}/api/songs/{{song_id}}/"
+        "url": "{{base_url}}/api/songs/{{song_id}}/",
+        "auth": {
+          "type": "noauth"
+        }
       },
       "response": [],
       "event": [
@@ -482,7 +780,10 @@
       "request": {
         "method": "GET",
         "header": [],
-        "url": "{{base_url}}/api/artists/2147483647/"
+        "url": "{{base_url}}/api/artists/2147483647/",
+        "auth": {
+          "type": "noauth"
+        }
       },
       "response": [],
       "event": [
@@ -559,7 +860,10 @@
       "request": {
         "method": "GET",
         "header": [],
-        "url": "{{base_url}}/api/songs/2147483647/"
+        "url": "{{base_url}}/api/songs/2147483647/",
+        "auth": {
+          "type": "noauth"
+        }
       },
       "response": [],
       "event": [
@@ -636,7 +940,10 @@
       "request": {
         "method": "GET",
         "header": [],
-        "url": "{{base_url}}/api/unknown/"
+        "url": "{{base_url}}/api/unknown/",
+        "auth": {
+          "type": "noauth"
+        }
       },
       "response": [],
       "event": [
@@ -712,7 +1019,10 @@
       "request": {
         "method": "GET",
         "header": [],
-        "url": "{{base_url}}/api/songs/{{song_id}}/"
+        "url": "{{base_url}}/api/songs/{{song_id}}/",
+        "auth": {
+          "type": "noauth"
+        }
       },
       "response": [],
       "event": [
@@ -753,7 +1063,10 @@
       "request": {
         "method": "GET",
         "header": [],
-        "url": "{{base_url}}/api/artists/{{artist_id}}/"
+        "url": "{{base_url}}/api/artists/{{artist_id}}/",
+        "auth": {
+          "type": "noauth"
+        }
       },
       "response": [],
       "event": [
@@ -768,6 +1081,50 @@
           }
         }
       ]
+    },
+    {
+      "name": "Logout: видалити токени, профіль — 401",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{base_url}}/api/me/",
+        "auth": {
+          "type": "noauth"
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.collectionVariables.unset(\"access\");",
+              "pm.collectionVariables.unset(\"refresh\");"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 401\", function () { pm.response.to.have.status(401); });",
+              "pm.test(\"Зрозуміла помилка\", function () { const e = pm.response.json().error; pm.expect(e.message).to.be.a(\"string\").and.not.empty; pm.expect(e).to.have.property(\"details\"); });"
+            ]
+          }
+        }
+      ]
     }
-  ]
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{access}}",
+        "type": "string"
+      }
+    ]
+  }
 }
